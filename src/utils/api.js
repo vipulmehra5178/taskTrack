@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Base URL for your backend API (replace with your backend URL)
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://tasktrackerapi-ff1x.onrender.com/api';
 
 // Register new user
 export const registerUser = async (userData) => {
