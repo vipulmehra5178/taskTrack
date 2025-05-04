@@ -1,93 +1,71 @@
-// src/pages/Dashboard.jsx
-import React, { useEffect, useState } from 'react';
-import { getProjects } from '../services/api';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Dashboard = () => {
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const userId = localStorage.getItem('userId');
+  const token = localStorage.getItem('token');
   const [projects, setProjects] = useState([]);
-  const [dashError, setDashError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+  const fetchProjects = async () => {
+    if (!userId || !token) {
+      console.warn('Missing userId or token');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const res = await axios.get(`${API_BASE}/project/${userId}/projects`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log('Fetched Projects:', res.data);
+      setProjects(Array.isArray(res.data.projects) ? res.data.projects : []);
+    } catch (err) {
+      console.error('Error fetching projects:', err);
+      if (err.response?.status === 401) {
+        alert('Unauthorized. Please log in again.');
+        localStorage.clear();
+        navigate('/login');
+      }
+      setProjects([]);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserProjects = async () => {
-      try {
-        const res = await getProjects();
-        if (res.data && Array.isArray(res.data.projects)) {
-          setProjects(res.data.projects);
-        } else {
-          setProjects([]);
-        }
-      } catch (err) {
-        console.error(err);
-        setDashError('Failed to load projects.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserProjects();
+    fetchProjects();
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 px-4">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <div className="space-x-4">
-          <Link
-            to="/create-project"
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            + New Project
-          </Link>
-          <Link
-            to="/create-task"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            + New Task
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen p-6 bg-gray-100">
+      <h1 className="text-2xl font-bold mb-6">Welcome to your Dashboard</h1>
 
-      {dashError && <p className="text-red-500 mb-6">{dashError}</p>}
+      <Link
+        to={`/project/${userId}/createProject`}
+        className="btn mb-4 bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Create New Project
+      </Link>
 
-      {loading ? (
-        <p className="text-gray-600">Loading...</p>
-      ) : Array.isArray(projects) && projects.length === 0 ? (
-        <p className="text-gray-600">No projects created yet.</p>
-      ) : (
-        <div className="grid gap-6">
-          {projects.map((project) => (
-            <div
-              key={project.uuid}
-              className="bg-white p-6 rounded-xl shadow-md border border-gray-100"
-            >
-              <h2 className="text-xl font-semibold mb-2 text-blue-700">
-                {project.title}
-              </h2>
-              <p className="text-gray-700 mb-3 italic">
-                {project.description || 'No description'}
+      <div className="grid gap-4">
+        {projects.length === 0 ? (
+          <p>No projects found.</p>
+        ) : (
+          projects.map((proj) => (
+            <div key={proj._id} className="bg-white p-4 rounded shadow">
+              <h3 className="text-lg font-bold">{proj.title}</h3>
+              <p className="text-gray-700">{proj.description}</p>
+              <p className="text-sm text-gray-500">
+                Created at: {new Date(proj.createdAt).toLocaleString()}
               </p>
-              <div>
-                <h3 className="font-semibold text-sm mb-2 text-gray-600">Tasks:</h3>
-                {Array.isArray(project.tasks) && project.tasks.length > 0 ? (
-                  <ul className="space-y-1 list-disc pl-5 text-gray-800">
-                    {project.tasks.map((task) => (
-                      <li key={task.uuid}>
-                        <strong>{task.title}</strong> –{' '}
-                        <span className="text-sm text-gray-500">{task.status}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-500">No tasks in this project yet.</p>
-                )}
-              </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

@@ -1,67 +1,60 @@
-import React, { useState } from 'react';
-import { createProject } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import axios from 'axios';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const CreateProject = () => {
-  const [projectTitle, setProjectTitle] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
-  const [projectError, setProjectError] = useState('');
+export default function CreateProject() {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const { userId } = useParams();
+  const token = localStorage.getItem('token');
   const navigate = useNavigate();
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-  const handleCreateProject = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!projectTitle) {
-      return setProjectError('Project title is required');
-    }
-
     try {
-      const res = await createProject({
-        title: projectTitle,
-        description: projectDescription,
-      });
-      console.log('Created Project:', res.data);
+      const res = await axios.post(
+        `${API_BASE}/project/${userId}/createProject`,
+        { title, description },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log('Project Created:', res.data);
       navigate('/dashboard');
     } catch (err) {
-        console.log(err);
-      setProjectError('Failed to create project');
+      console.error('Error creating project:', err);
     }
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 bg-white shadow-md rounded-xl">
-      <h2 className="text-2xl font-bold text-center mb-6">Create New Project</h2>
-      {projectError && <p className="text-red-500 mb-4">{projectError}</p>}
-      <form onSubmit={handleCreateProject}>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-2">Project Title</label>
-          <input
-            type="text"
-            value={projectTitle}
-            onChange={(e) => setProjectTitle(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter project title"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-2">Project Description</label>
-          <textarea
-            value={projectDescription}
-            onChange={(e) => setProjectDescription(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows="4"
-            placeholder="Enter project description"
-          ></textarea>
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300"
-        >
-          Create Project
+    <div className="min-h-screen p-6 bg-gray-100">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded shadow-md max-w-lg mx-auto"
+      >
+        <h2 className="text-2xl font-semibold mb-4">Create a New Project</h2>
+        <input
+          type="text"
+          placeholder="Project Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          className="input w-full mb-3"
+        />
+        <textarea
+          placeholder="Project Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+          className="input w-full mb-3"
+        />
+        <button type="submit" className="btn bg-blue-600 text-white w-full">
+          Create
         </button>
       </form>
     </div>
   );
-};
-
-export default CreateProject;
+}

@@ -1,100 +1,36 @@
-// src/pages/Signup.jsx
-import React, { useState } from 'react';
-import { registerUser } from '../utils/api'; // Import the API function
+import { useState } from 'react';
+import { signup } from '../utils/api';
+import { useNavigate } from 'react-router-dom';
 
-const Signup = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [country, setCountry] = useState('');
-  const [error, setError] = useState('');
+export default function Signup() {
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', country: '' });
+  const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
+  const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSubmit = async e => {
     e.preventDefault();
-    const userData = { name, email, password, country };
     try {
-      const result = await registerUser(userData);
-      console.log('User Registered:', result);
-      // Redirect to login page or show success message
-    } catch (error) {
-      setError(error.message || 'Something went wrong.');
+      const { data } = await signup(formData);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userId', data.userId);
+      navigate('/dashboard');
+    } catch (err) {
+      console.log(err);
+      alert('Signup failed!');
     }
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-bold text-center text-blue-600">Signup</h2>
-        {error && <p className="text-red-600 text-sm text-center">{error}</p>}
-        <form onSubmit={handleSignup} className="mt-4">
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="country" className="block text-sm font-medium text-gray-700">
-              Country
-            </label>
-            <input
-              type="text"
-              id="country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Signup
-          </button>
-        </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link to="/" className="text-blue-600 hover:underline">
-            Login here
-          </Link>
-        </p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md space-y-4 w-full max-w-md">
+        <h2 className="text-xl font-semibold">Sign Up</h2>
+        <input name="name" onChange={handleChange} placeholder="Name" required className="input" />
+        <input name="email" onChange={handleChange} placeholder="Email" type="email" required className="input" />
+        <input name="password" onChange={handleChange} placeholder="Password" type="password" required className="input" />
+        <input name="country" onChange={handleChange} placeholder="Country" required className="input" />
+        <button type="submit" className="btn">Sign Up</button>
+      </form>
     </div>
   );
-};
-
-export default Signup;
+}
