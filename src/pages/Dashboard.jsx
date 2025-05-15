@@ -1,71 +1,83 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
 
-export default function Dashboard() {
-  const navigate = useNavigate();
-  const userId = localStorage.getItem('userId');
-  const token = localStorage.getItem('token');
+import { useEffect, useState } from "react";
+import { getUserProjects, deleteProject } from "../utils/api";
+import CreateProject from "../pages/CreateProject";
+import { useNavigate } from "react-router-dom";
+
+const Dashboard = () => {
+  const userId = localStorage.getItem("userId");
   const [projects, setProjects] = useState([]);
-  const API_BASE = import.meta.env.VITE_API_BASE_URL;
+  const navigate = useNavigate();
 
-  const fetchProjects = async () => {
-    if (!userId || !token) {
-      console.warn('Missing userId or token');
-      navigate('/login');
-      return;
-    }
-
+  const loadProjects = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/project/${userId}/projects`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log('Fetched Projects:', res.data);
-      setProjects(Array.isArray(res.data.projects) ? res.data.projects : []);
+      const res = await getUserProjects(userId);
+      setProjects(res.data.projects);
     } catch (err) {
-      console.error('Error fetching projects:', err);
-      if (err.response?.status === 401) {
-        alert('Unauthorized. Please log in again.');
-        localStorage.clear();
-        navigate('/login');
-      }
-      setProjects([]);
+      console.error(err);
+      alert("Failed to load projects");
+    }
+  };
+
+  const handleDelete = async (projectId) => {
+    if (!window.confirm("Delete this project?")) return;
+    try {
+      await deleteProject(userId, projectId);
+      loadProjects();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete");
     }
   };
 
   useEffect(() => {
-    fetchProjects();
+    loadProjects();
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("userId");
+    navigate("/login");
+  };
   return (
-    <div className="min-h-screen p-6 bg-gray-100">
-      <h1 className="text-2xl font-bold mb-6">Welcome to your Dashboard</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+              <p className="mt-2">Your user ID: <strong>{userId}</strong></p>
+              <button
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      <p className="mt-2">Welcome to Task Tracker! Here you can manage your projects.</p>
+      <p className="mt-2">Create a new project to get started.</p>
+      <CreateProject userId={userId} onProjectCreated={loadProjects} />
 
-      <Link
-        to={`/project/${userId}/createProject`}
-        className="btn mb-4 bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        Create New Project
-      </Link>
-
-      <div className="grid gap-4">
-        {projects.length === 0 ? (
-          <p>No projects found.</p>
-        ) : (
-          projects.map((proj) => (
-            <div key={proj._id} className="bg-white p-4 rounded shadow">
-              <h3 className="text-lg font-bold">{proj.title}</h3>
-              <p className="text-gray-700">{proj.description}</p>
-              <p className="text-sm text-gray-500">
-                Created at: {new Date(proj.createdAt).toLocaleString()}
+      <h2 className="text-xl font-semibold mb-2">Your Projects</h2>
+      <div className="grid grid-cols-1 gap-4">
+        {projects.map((project) => (
+          <div
+            key={project.projectId}
+            className="p-4 border rounded shadow flex justify-between items-center"
+          >
+            <div>
+              <h3 className="font-bold">{project.title}</h3>
+              <p className="text-gray-600">{project.description}</p>
+              <p className="text-sm text-gray-400">
+                Created: {new Date(project.createdAt).toLocaleString()}
               </p>
             </div>
-          ))
-        )}
+            <button
+              className="text-red-600 hover:underline"
+              onClick={() => handleDelete(project.projectId)}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
+        {projects.length === 0 && <p>No projects found. Create one!</p>}
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;

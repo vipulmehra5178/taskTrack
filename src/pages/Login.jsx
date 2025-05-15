@@ -1,34 +1,49 @@
-import { useState } from 'react';
-import { login } from '../utils/api';
-import { useNavigate } from 'react-router-dom';
+// src/pages/Login.jsx
+import { useState } from "react";
+import { login } from "../utils/api";
+import { useNavigate } from "react-router-dom";
 
-export default function Login() {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const handleSubmit = async e => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await login(formData);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userId', data.user.userId);
-      navigate('/dashboard');
+      const res = await login({ email, password });
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userId", res.data.user.userId);
+      navigate("/dashboard");
     } catch (err) {
-      console.log(err);
-      alert('Login failed!');
+      alert(err.response?.data?.msg || "Login failed");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md space-y-4 w-full max-w-md">
-        <h2 className="text-xl font-semibold">Login</h2>
-        <input name="email" onChange={handleChange} placeholder="Email" type="email" required className="input" />
-        <input name="password" onChange={handleChange} placeholder="Password" type="password" required className="input" />
-        <button type="submit" className="btn">Login</button>
+      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-80">
+        <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full p-2 border mb-3 rounded"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full p-2 border mb-4 rounded"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Login</button>
       </form>
     </div>
   );
-}
+};
+
+export default Login;
