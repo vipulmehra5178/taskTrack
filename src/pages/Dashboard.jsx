@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { getUserProjects, deleteProject } from "../utils/api";
 import CreateProject from "../pages/CreateProject";
@@ -30,52 +29,74 @@ const Dashboard = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
+  const handleViewTasks = (projectId) => {
+    navigate(`/project/${projectId}/tasks`);
+  };
+
   useEffect(() => {
     loadProjects();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("userId");
-    navigate("/login");
-  };
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-              <p className="mt-2">Your user ID: <strong>{userId}</strong></p>
-              <button
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-sm text-gray-600 mt-1">User ID: <strong>{userId}</strong></p>
+        </div>
+        <button
           className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           onClick={handleLogout}
         >
           Logout
         </button>
-      <p className="mt-2">Welcome to Task Tracker! Here you can manage your projects.</p>
-      <p className="mt-2">Create a new project to get started.</p>
+      </div>
+
+      <p className="mb-4 text-gray-700">Welcome to Task Tracker! Manage your projects below.</p>
       <CreateProject userId={userId} onProjectCreated={loadProjects} />
 
-      <h2 className="text-xl font-semibold mb-2">Your Projects</h2>
-      <div className="grid grid-cols-1 gap-4">
-        {projects.map((project) => (
-          <div
-            key={project.projectId}
-            className="p-4 border rounded shadow flex justify-between items-center"
-          >
-            <div>
-              <h3 className="font-bold">{project.title}</h3>
-              <p className="text-gray-600">{project.description}</p>
-              <p className="text-sm text-gray-400">
-                Created: {new Date(project.createdAt).toLocaleString()}
-              </p>
-            </div>
-            <button
-              className="text-red-600 hover:underline"
-              onClick={() => handleDelete(project.projectId)}
+      <h2 className="text-xl font-semibold mt-8 mb-4">Your Projects</h2>
+
+      {projects.length === 0 ? (
+        <p className="text-gray-500">No projects found. Create one!</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {projects.map((project) => (
+            <div
+              key={project.projectId}
+              className="p-4 border rounded-lg shadow bg-white flex flex-col justify-between"
             >
-              Delete
-            </button>
-          </div>
-        ))}
-        {projects.length === 0 && <p>No projects found. Create one!</p>}
-      </div>
+              <div>
+                <h3 className="font-bold text-lg">{project.title}</h3>
+                <p className="text-gray-600 mt-1">{project.description}</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Created: {new Date(project.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <div className="mt-4 flex justify-between items-center">
+                <button
+                  className="text-red-600 hover:underline"
+                  onClick={() => handleDelete(project.projectId)}
+                >
+                  Delete
+                </button>
+                <button
+                  className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                  onClick={() => handleViewTasks(project.projectId)}
+                >
+                  View Tasks
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

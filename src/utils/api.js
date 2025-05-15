@@ -27,3 +27,36 @@ export const deleteProject = async (userId, projectId) =>
   axios.delete(`${BASE_URL}/project/${userId}/${projectId}`, {
     headers: { Authorization: `Bearer ${getToken()}` },
   });
+
+
+export const createTask = (userId, projectId, taskData, token) => {
+  return API.post(`/tasks/${userId}/${projectId}/createTask`, taskData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const getTasks = (userId, projectId, token) => {
+  return API.get(`/tasks/${userId}/${projectId}/tasks`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const updateTask = (userId, projectId, taskId, updates, token) => {
+  return API.put(`/tasks/${userId}/${projectId}/${taskId}`, updates, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const deleteTask = (userId, projectId, taskId, token) => {
+  return API.delete(`/tasks/${userId}/${projectId}/${taskId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

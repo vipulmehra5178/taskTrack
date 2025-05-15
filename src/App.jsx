@@ -5,7 +5,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home"; // ✅ Make sure you have this file
 import ProtectedRoute from "./utils/ProtectedRoute";
-
+import ProjectTasks from "./pages/ProjectTasks"; // ✅ Make sure you have this file
 function App() {
   return (
     <Router>
@@ -21,6 +21,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        // Add this route
+        <Route path="/project/:projectId/tasks" element={<ProjectTasks />} />
+
       </Routes>
     </Router>
   );
