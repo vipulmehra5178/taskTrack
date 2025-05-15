@@ -1,12 +1,65 @@
-# React + Vite
+🧠 MERN Task Tracker
+A full-stack Task Tracker application built with MongoDB, Express, React, and Node.js. Authenticated users can:
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+✅ Sign up & log in
 
-Currently, two official plugins are available:
+📁 Create multiple projects
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+✅ Inside each project, create, update, and delete tasks
 
-## Expanding the ESLint configuration
+root/
+├── frontend/
+│   ├── components/
+│   ├── pages/
+│   ├── utils/api.js
+│   └── App.jsx
+└── README.md
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+🧪 Usage Flow
+1.Sign up/Login
+   
+    Get your JWT token and userId.
+
+2.Create a Project
+
+    Use /api/project/:userId/createProject.
+
+3.Inside that Project
+
+    Use /api/tasks/:userId/:projectId/createTask to add tasks.
+
+4.Manage Tasks
+
+    Update: /api/tasks/:userId/:projectId/:taskId
+
+     Delete: /api/tasks/:userId/:projectId/:taskId
+
+
+📦 Tech Stack
+
+Frontend: React, Vite, Tailwind CSS
+
+Backend: Express.js, Node.js
+
+Database: MongoDB 
+
+Auth: JWT
+
+Hosting: Render.com
+
+
+⚙️ Setup Instructions
+
+💻 Frontend
+
+    cd frontend
+
+    npm install
+
+    npm run dev
+
+    Set .env:
+
+    VITE_API_BASE_URL=https://your-backend-url/api
+
